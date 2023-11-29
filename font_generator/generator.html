@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字库生成器</title>
+    <style>
+        html {
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: start;
+        }
+
+        .box {
+            background-color: rgb(30, 30, 36);
+            border: 1px solid #000;
+            border-radius: 10px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .box .item {
+            background-color: rgb(27, 65, 5);
+            text-align: center;
+            color: white;
+        }
+
+        .box .item-selected {
+            background-color: rgb(36, 221, 34);
+            border: none;
+        }
+
+        .box .item:hover {
+            cursor: pointer;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            font-size: 15px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            border: 2px solid #3498db;
+            color: white;
+            background-color: #409EFF;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .small {
+            position: absolute;
+            left: 200px;
+            padding: 5px 20px;
+            border: none;
+            font-size: 15px;
+            font-weight: normal;
+            background-color: #67C23A;
+        }
+
+        .result {
+            padding-left: 20px;
+        }
+
+        .desc {
+            position: absolute;
+            bottom: 0px;
+            right: 0px;
+            height: 50px;
+            left: 0px;
+            color: white;
+            background-color: #303133;
+            padding: 5px 10px;
+        }
+
+        .custom-box {
+            padding: 10px;
+            border: 1px solid #303133;
+            margin-top: 50px;
+        }
+
+
+        .custom-output {
+            margin-top: 10px;
+            height: 30px;
+            font-size: 20px;
+            color: #303133;
+        }
+
+        .input-box {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            outline: none;
+            /* 移除默认的轮廓样式 */
+        }
+
+        /* 悬停时改变边框颜色 */
+        .input-box:hover {
+            border-color: #3498db;
+        }
+
+        /* 获取焦点时改变边框颜色 */
+        .input-box:focus {
+            border-color: #2ecc71;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="box">
+        </div>
+        <div class="result">
+            <button class="btn" id="replace">VFD屏幕切换</button>
+            <button class="btn" id="compute">计算输出结果</button>
+            <button class="btn" id="clean">清空</button>
+            <div style="padding-top: 30px;color: #303133;position: relative;">
+                <span>输出结果:</span>
+                <span id="result"></span>
+                <button class="btn small" id="copy" data-clipboard-target="#result">复制值</button>
+            </div>
+            <div class="custom-box">
+                <div style="color: #909399;font-size: 12px;margin-bottom: 10px;">手动生成Hex,输入段序号(从1开始)多个需要逗号分割例如(1,2,6,9)
+                </div>
+                <input class="input-box" id="custominput" />
+                <button class="btn" id="customgen">生成</button>
+                <div class="custom-output"></div>
+            </div>
+            <div class="desc">
+                VFD断码屏字库生成工具适用于PT6315
+                <br>Design: <a style="color: white;" href="http://www.saisaiwa.com">SAISAIWA</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+<script>
+    //box方格尺寸： 横着6个，竖着9个，单个格子长宽50px,间距10px
+    var horizontalCount = 6; //横着的数量
+    var verticalCount = 9; //竖着的数量
+    var padding = 15; //间距
+    var size = 50; //单个格子的长宽
+    var type = 0; //VFD样式类型 
+
+
+
+    var selects = new Set();
+    var vfd_data_1 = [
+        {
+            pos: [1, 2, 3, 4],
+            text: 'a',
+            num: 7
+        },
+        {
+            pos: [6, 12, 18],
+            text: 'f',
+            num: 5
+        },
+        {
+            pos: [8, 14, 20, 32, 38, 44],
+            text: 'h',
+            num: 9
+        },
+        {
+            pos: [11, 17, 23],
+            text: 'b',
+            num: 6
+        },
+        {
+            pos: [25, 26, 27, 28],
+            text: 'g',
+            num: 4
+        },
+        {
+            pos: [30, 36, 42],
+            text: 'e',
+            num: 2
+        },
+        {
+            pos: [35, 41, 47],
+            text: 'c',
+            num: 3
+        },
+        {
+            pos: [49, 50, 51, 52],
+            text: 'd',
+            num: 1
+        },
+    ];
+
+    var vfd_data_2 = [
+        {
+            pos: [1, 2, 3, 4],
+            text: 'a1',
+            num: 16
+        },
+        {
+            pos: [6, 12, 18],
+            text: 'f1',
+            num: 14
+        },
+        {
+            pos: [11, 17, 23],
+            text: 'b1',
+            num: 15
+        },
+        {
+            pos: [25, 26, 27, 28],
+            text: 'g1',
+            num: 13
+        },
+        {
+            pos: [30, 36, 42],
+            text: 'e1',
+            num: 11
+        },
+        {
+            pos: [35, 41, 47],
+            text: 'c1',
+            num: 12
+        },
+        {
+            pos: [49, 50, 51, 52],
+            text: 'd1',
+            num: 10
+        },
+    ];
+    $(function () {
+        console.log("onLoad");
+
+        load_ui();
+        $("#replace").click(() => {
+            type = !type;
+            load_ui();
+        });
+        $("#clean").click(() => {
+            load_ui();
+        });
+
+        new ClipboardJS('#copy');
+
+        $("#customgen").click(() => {
+            var input = $("#custominput").val();
+            if (input.length == 0) {
+                $(".custom-output").empty();
+                return;
+            }
+            //中文逗号处理
+            input = input.replaceAll("，", ",");
+            var unique = [...new Set(input.split(','))];
+            $(".custom-output").text(computeHex(unique));
+        });
+
+
+        //计算结果
+        $("#compute").click(() => {
+            $("#result").text(computeHex(selects));
+        });
+    });
+
+    function computeHex(set) {
+        var bytes = new Array(24).fill(0);
+        for (var p of set) {
+            bytes[p - 1] = 1;
+        }
+        //分8位
+        var sub_byte1 = bytes.slice(0, 8).reverse();
+        var sub_byte2 = bytes.slice(8, 16).reverse();
+        var sub_byte3 = bytes.slice(16).reverse();
+
+        return "0x" + convertHex(sub_byte1) + convertHex(sub_byte2) + convertHex(sub_byte3);
+    }
+
+    function load_ui() {
+        selects.clear();
+        $("#result").text("");
+        //设置主box的尺寸
+        $('.box')
+            .width(horizontalCount * size + (padding * horizontalCount) + padding)
+            .height(verticalCount * size + (padding * verticalCount) + padding)
+            .empty();
+        var map;
+        if (type == 0) {
+            map = vfd_data_1;
+        } else {
+            map = vfd_data_2;
+        }
+        for (var j = 0; j < verticalCount; j++) {
+            for (var i = 0; i < horizontalCount; i++) {
+                if (type == 0) {
+                    if (vfd_style_draw_1(j, i)) {
+                        continue;
+                    }
+                } else {
+                    if (vfd_style_draw_2(j, i)) {
+                        continue;
+                    }
+                }
+
+                var newDiv = $('<div>');
+                // 设置 div 的样式和位置
+                newDiv.css({
+                    'width': size + 'px',
+                    'height': size + 'px',
+                    'margin': padding + 'px',
+                    'position': 'absolute',
+                    'left': i * (size + padding) + 'px',
+                    'top': j * (size + padding) + 'px'
+                });
+                newDiv.attr("pos", horizontalCount * j + i);
+                newDiv.addClass("item");
+                vfd_style_click(map, newDiv);
+                // 将新创建的 div 添加到页面中
+                $('.box').append(newDiv);
+            }
+        }
+    }
+
+    function vfd_style_draw_1(j, i) {
+        if (j == 0 || j == 4 || j == 8) {
+            if (i == 0 || i == 5) {
+                return true;
+            }
+        } else {
+            if (i == 1 || i == 3 || i == 4) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function vfd_style_draw_2(j, i) {
+        if (j == 0 || j == 4 || j == 8) {
+            if (i == 0 || i == 5) {
+                return true;
+            }
+        } else {
+            if (i != 0 && i != 5) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function vfd_style_click(map, dom) {
+        var position = dom.attr("pos");
+        for (var item of map) {
+            if (item.pos.indexOf(parseInt(position)) != -1) {
+                dom.text(item.text);
+                dom.attr("num", item.num);
+                dom.click(function () {
+                    var dom = $(this);
+                    var num = parseInt(dom.attr("num"));
+                    var selector = '.box .item[num="' + num + '"]';
+                    if (selects.has(num)) {
+                        selects.delete(num);
+                        $(".box")
+                        $(selector).removeClass("item-selected");
+                    } else {
+                        selects.add(num);
+                        $(selector).addClass("item-selected");
+                    }
+                });
+                break;
+            }
+        }
+    }
+
+    function convertHex(bytes) {
+        var str = "";
+        for (var item of bytes) {
+            str += item;
+        }
+        var hex = parseInt(str, 2).toString(16);
+        if (hex.length == 1) {
+            return "0" + hex;
+        }
+        return hex;
+    }
+
+</script>
+
+</html>
