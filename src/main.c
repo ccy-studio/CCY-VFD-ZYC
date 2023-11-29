@@ -23,7 +23,8 @@
 /**
  * 屏幕保护程序间隔执行时间,单位毫秒默认2分钟一次
  */
-#define SCREEN_SAVER_TIME 120000UL
+// #define SCREEN_SAVER_TIME 120000UL
+#define SCREEN_SAVER_TIME 5000UL
 
 u8 vfd_brightness_level[3] = {1, 2, 7};  // VFD亮度等级
 u8 vfd_brightness = 2;                   // VFD亮度等级Level下标
@@ -76,6 +77,11 @@ void main() {
     TF1 = 0;       // 清除TF1标志
     TR1 = 1;       // 定时器1开始计时
     ET1 = 1;       // 使能定时器1中断
+
+    // while (1) {
+    //     delay_ms(1000);
+    //     vfd_gui_set_text("123456789", 0);
+    // }
 
     while (1) {
         // 动态亮度调整
@@ -156,20 +162,22 @@ void main() {
                         }
                     }
                     memset(buffer, 0x00, sizeof(buffer));
-                    sprintf(buffer, "%s%02bd", set_prefix, (*set_clock_num_p));
-                    set_clock_action_flag = 0;
+                    sprintf(buffer, "%s%02bd", set_prefix,
+                    (*set_clock_num_p)); set_clock_action_flag = 0;
                 }
                 acg_open = false;
-                vfd_gui_set_text(buffer, 0, 0);
+                vfd_gui_set_text(buffer, 0);
                 page_wait_count = _systick_ccr;
             }
         }
 
         // 时间保存设定
         if (save_timeinfo_flag) {
-            rx8025_set_time(set_timeinfo_cache.year, set_timeinfo_cache.month,
-                            set_timeinfo_cache.day, 1, set_timeinfo_cache.hour,
-                            set_timeinfo_cache.min, set_timeinfo_cache.sec);
+            rx8025_set_time(set_timeinfo_cache.year,
+            set_timeinfo_cache.month,
+                            set_timeinfo_cache.day, 1,
+                            set_timeinfo_cache.hour, set_timeinfo_cache.min,
+                            set_timeinfo_cache.sec);
             save_timeinfo_flag = false;
         }
 
@@ -205,7 +213,7 @@ void page_home() {
         colon_flag = 0;
         formart_date(&timeinfo, &buffer);
     }
-    vfd_gui_set_text(buffer, colon_flag, 0);
+    vfd_gui_set_text(buffer, colon_flag);
 }
 
 void btn_scan_isr(void) interrupt 3 {

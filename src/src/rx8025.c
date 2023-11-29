@@ -242,7 +242,9 @@ void rx8025_time_get(rx8025_timeinfo* timeinfo) {
 }
 
 void formart_time(rx8025_timeinfo* timeinfo, char* buf) {
-    sprintf(buf, "W%bd %02bd%02bd%02bd", timeinfo->week, timeinfo->hour,
+    // sprintf(buf, "%bd %02bd%02bd %02bd", timeinfo->week, timeinfo->hour,
+    //         timeinfo->min, timeinfo->sec);
+     sprintf(buf, " %02bd %02bd %02bd", timeinfo->hour,
             timeinfo->min, timeinfo->sec);
 }
 
@@ -250,6 +252,6 @@ void formart_time(rx8025_timeinfo* timeinfo, char* buf) {
  *  YYMMdd
  */
 void formart_date(rx8025_timeinfo* timeinfo, char* buf) {
-    sprintf(buf, "20%bd %02bd%02bd", timeinfo->year, timeinfo->month,
+    sprintf(buf, "20%bd%02bd-%02bd", timeinfo->year, timeinfo->month,
             timeinfo->day);
 }
