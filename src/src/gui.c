@@ -123,6 +123,8 @@ void vfd_gui_set_text(char* string, const u8 colon) {
         dig_buf[3] |= 0x080000;
         dig_buf[1] |= 0x001000;
     }
+    // 设置点亮[dts]图标
+    dig_buf[4] |= 0x020000;
     for (i = 0; i < 5; i++) {
         send_buf[index++] = (dig_buf[i] >> 16) & 0xFF;
         send_buf[index++] = (dig_buf[i] >> 8) & 0xFF;
@@ -207,6 +209,14 @@ void vfd_gui_acg_update() {
         u2 = bit_reversed((b >> 8) & 0xFF);
         u3 = bit_reversed(b & 0xFF);
         b = (uint32_t)u1 << 16 | u2 << 8 | u3;
+        // 设置方框的动画时间特效
+        if (pos < 4) {
+            b |= 0x004000;
+        } else if (pos >= 4 && pos < 8) {
+            b |= 0x002000;
+        } else if (pos >= 8) {
+            b |= 0x001000;
+        }
         acg1_u32s[pos] = b;
     }
     vfd_gui_set_dig(5, acg1_u32s[pos]);
@@ -218,7 +228,7 @@ void vfd_gui_acg_update() {
  */
 void vfd_gui_display_protect_exec() {
     u8 i, j;
-    u8 data buf[12];
+    u8 buf[12];
     for (i = 1; i <= 10; i++) {
         memset(buf, 0x00, sizeof(buf));
         for (j = 0; j < 10; j++) {
@@ -229,4 +239,5 @@ void vfd_gui_display_protect_exec() {
         vfd_gui_set_text(buf, 0);
         delay_ms(10);
     }
+    vfd_gui_clear();
 }
