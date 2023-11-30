@@ -112,3 +112,14 @@ void delay_us(u32 us) {
             ;
     } while (--us);
 }
+
+u8 btn_gpio_read(btn_gpio_t gpio) {
+    if (gpio == BTN_P33) {
+        return P33;
+    } else if (gpio == BTN_P34) {
+        return P34;
+    } else if (gpio == BTN_P35) {
+        return P35;
+    }
+    return 0;
+}

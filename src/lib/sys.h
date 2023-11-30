@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-11-02 11:23:32
- * @LastEditTime: 2023-11-03 10:19:27
+ * @LastEditTime: 2023-11-30 16:37:04
  */
 #ifndef __MSYS_H
 #define __MSYS_H
@@ -36,11 +36,34 @@ typedef uint8_t bool;
 #define P_CLK P10
 #define P_DIN P37
 
+typedef enum {
+    BTN_P33 = 0,
+    BTN_P34,
+    BTN_P35,
+} btn_gpio_t;
+
+typedef enum {
+    BTN_PRESS = 0,
+    BTN_RELEASE,
+    BTN_LONG,
+} btn_state_t;
+
+typedef struct {
+    btn_gpio_t gpio;
+    btn_state_t btn_type;
+    u32 last_press_time;
+    u8 falg;  // 是否被处理
+} btn_t;
+#define BTN_SCAN_MS 1
+#define BTN_LONG_PRESS_MS 1000
+#define BTN_LONG_DOUBLE_MS 500
+
 void hal_init_systick();
 u32 hal_systick_get();
 void hal_init_uart(void);
 void hal_init_all_gpio(void);
 void delay_ms(u32 ms);
 void delay_us(u32 us);
+u8 btn_gpio_read(btn_gpio_t gpio);
 
 #endif
