@@ -16,7 +16,9 @@
 
 // #define DEV_PLATFROM
 
-// #define SYS_FOSC 22118400UL  // 22.1184Mhz
+/**
+ * 24.000MHz обть24Mhz
+*/
 
 typedef unsigned char uint8_t;
 typedef unsigned int uint16_t;

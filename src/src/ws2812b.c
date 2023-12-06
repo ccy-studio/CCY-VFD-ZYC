@@ -16,7 +16,6 @@ typedef struct {
 
 rgb_t xdata cache_arr[RGB_LED_COUNT];
 u8 data buf_arr[RGB_LED_COUNT * 3];
-static bit data busy;
 
 // 特效方法
 rgb_t hsv2rgb_rainbow(hsv_t hsv);
@@ -24,49 +23,87 @@ rgb_t hsv2rgb_spectrum(hsv_t hsv);
 rgb_t rgb_heat_color(uint8_t temperature);
 
 void rgb_init() {
-    P_SW1 |= 0x0c;  // P3.4
-}
-
-void spi_isr() interrupt 9 {
-    SPSTAT = 0xc0;
-    busy = 0;
-}
-
-void spi_open() {
-    SPSTAT = 0xc0;
-    SPCTL = 0xd4;  // 1101 0100
-    IE2 |= 0x02;   // ???í????
     RGB = 0;
 }
 
-void spi_close() {
-    SPCTL = 0x00;
+void send_0() {
+    RGB = 1;
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
     RGB = 0;
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
 }
 
-void send_byte(u8 dat) {
-    while (busy)
-        ;
-    SPDAT = dat;
+void send_1() {
+    RGB = 1;
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    RGB = 0;
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
+    _nop_();
 }
 
-void send_spi() {
+void send_gpio() {
     u16 len = RGB_LED_COUNT * 3;
     u8 j, i;
-    spi_open();
     for (i = 0; i < len; i++) {
         u8 d1 = buf_arr[i], buf;
         for (j = 0; j < 8; j++) {
             if (d1 & 0x80) {
-                buf = 0xFC; /*11111100b;*/
+                send_1();
             } else {
-                buf = 0XC0; /*11000000b;*/
+                send_0();
             }
-            send_byte(buf);
             d1 <<= 1;
         }
     }
-    spi_close();
 }
 
 void rgb_set_color(u8 index, u8 r, u8 g, u8 b) {
@@ -87,7 +124,7 @@ void rgb_update(u8 brightness) {
         buf_arr[bi++] = (uint8_t)(((uint16_t)rgb->r * brightness) / 255);
         buf_arr[bi++] = (uint8_t)(((uint16_t)rgb->b * brightness) / 255);
     }
-    send_spi();
+    send_gpio();
     delay_us(100);
 }
 

@@ -79,8 +79,8 @@ void main() {
     // 开启按键扫描定时器 1毫秒@22.1184MHz
     AUXR |= 0x40;  // 定时器时钟1T模式
     TMOD &= 0x0F;  // 设置定时器模式
-    TL1 = 0x9A;    // 设置定时初始值
-    TH1 = 0xA9;    // 设置定时初始值
+    TL1 = 0x40;    // 设置定时初始值
+    TH1 = 0xA2;    // 设置定时初始值
     TF1 = 0;       // 清除TF1标志
     TR1 = 1;       // 定时器1开始计时
     ET1 = 1;       // 使能定时器1中断
@@ -123,6 +123,9 @@ void main() {
                 // 长按设置RGB的开关与特效类型改变
                 rgb_open = !rgb_open;
                 rgb_type = (rgb_type + 1) % 3;
+                if (!rgb_open) {
+                    rgb_clear();
+                }
             }
             btn_arr[1].falg = 0;
         }

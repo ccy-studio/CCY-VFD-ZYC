@@ -59,11 +59,11 @@ void hal_init_uart(void) {}
 #endif
 
 void hal_init_systick() {
-    // 1毫秒@22.1184MHz
+    // 1毫秒@24.000MHz
     AUXR |= 0x80;  // 定时器时钟1T模式
     TMOD = 0xF3;   // 设置定时器模式
-    TL0 = 0x9A;    // 设置定时初始值
-    TH0 = 0xA9;    // 设置定时初始值
+    TL0 = 0x40;    // 设置定时初始值
+    TH0 = 0xA2;    // 设置定时初始值
     TF0 = 0;       // 清除TF0标志
     TR0 = 1;       // 定时器0开始计时
     ET0 = 1;       // 使能定时器0中断
@@ -79,15 +79,16 @@ void timer0_Isr(void) interrupt 1 {
 }
 
 void hal_init_all_gpio(void) {
-    P1M0 = 0x08;
+    P1M0 = 0xf8;
     P1M1 = 0x33;
     P1PU = 0x33;
 
     P3M0 = 0x00;
     P3M1 = 0x80;
     P3PU = 0x80;
+    P3SR = 0xef;
 
-    P5M0 = 0x00;
+    P5M0 = 0x10;
     P5M1 = 0x00;
 
     EA = 1;  // 开总中断
@@ -96,8 +97,8 @@ void hal_init_all_gpio(void) {
 void delay_ms(u32 ms) {
     unsigned char data i, j;
     do {
-        i = 29;
-        j = 183;
+        i = 24;
+        j = 85;
         do {
             while (--j)
                 ;
@@ -110,7 +111,8 @@ void delay_us(u32 us) {
 
     do {
         _nop_();
-        i = 5;
+        _nop_();
+        i = 3;
         while (--i)
             ;
     } while (--us);
