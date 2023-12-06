@@ -3,10 +3,11 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-11-02 11:19:34
- * @LastEditTime: 2023-11-30 17:58:43
+ * @LastEditTime: 2023-12-06 17:32:55
  */
 #include "gui.h"
 #include "rx8025.h"
+#include "ws2812b.h"
 
 /**
  * 0x0n 一级页面
@@ -29,13 +30,18 @@ bool vfd_saver_open = true;              // vfd屏幕保护程序开关
 
 u8 data page_display_flag = PAGE_FLAG_CLOCK_TIME;  // 页面显示内容
 u8 last_page_display_flag;                         // 上次页面显示内容
-rx8025_timeinfo data timeinfo;  // 主动态更新的时间对象
+rx8025_timeinfo timeinfo;  // 主动态更新的时间对象
 
 rx8025_timeinfo set_timeinfo_cache;  // 设置timeinfo时的缓存
 u8 max, min;  // 设置时间的时候的临时变量，记录当前设置值的最大和最小阈值范围
 bool save_timeinfo_flag = false;  // 触发保存时间的操作flag
 u8 data buffer[10];               // vfd显示缓存
 bool colon_flag = 0;              // vfd冒号显示状态
+
+// RGB设置
+u8 rgb_brightness = 255;  // RGB亮度
+u8 rgb_open = 1;          // RGB开关
+u8 rgb_type = 0;          // RGB闪烁类型
 
 u8* set_clock_num_p;    // 记录时间设置的指针变量
 u8 set_clock_item = 1;  // 记录时间设置的时间项
@@ -45,14 +51,15 @@ u32 data time_wait_count;
 u32 data page_wait_count;
 u32 data acg_wait_count;
 u32 data saver_wait_count;
+u32 data rgb_wait_count;
 
 /**
  * 按钮定义
  */
 static btn_t data btn_arr[3] = {
-    {BTN_P33, BTN_RELEASE, 0, 0},
-    {BTN_P34, BTN_RELEASE, 0, 0},
-    {BTN_P35, BTN_RELEASE, 0, 0},
+    {BTN_P, BTN_RELEASE, 0, 0},
+    {BTN_S, BTN_RELEASE, 0, 0},
+    {BTN_M, BTN_RELEASE, 0, 0},
 };
 
 extern u32 data _systick_ccr;  // 系统滴答定时器走时
@@ -67,6 +74,7 @@ void main() {
     // hal_init_uart();
     rx8025t_init();
     vfd_gui_init();
+    rgb_init();
 
     // 开启按键扫描定时器 1毫秒@22.1184MHz
     AUXR |= 0x40;  // 定时器时钟1T模式
@@ -79,7 +87,6 @@ void main() {
 
     while (1) {
         //====>>>>>>按钮的触发扫描 -> Start
-        // P33- P34+ P35M
         if (btn_arr[0].falg) {
             // P33
             if (btn_arr[0].btn_type == BTN_PRESS) {
@@ -113,6 +120,9 @@ void main() {
                     vfd_brightness = (vfd_brightness + 1) % 3;
                 }
             } else if (btn_arr[1].btn_type == BTN_LONG) {
+                // 长按设置RGB的开关与特效类型改变
+                rgb_open = !rgb_open;
+                rgb_type = (rgb_type + 1) % 3;
             }
             btn_arr[1].falg = 0;
         }
@@ -257,6 +267,14 @@ void main() {
                 saver_wait_count = _systick_ccr;
             }
         }
+
+        // RGB
+        if (rgb_open) {
+            if (interval_check(rgb_wait_count, 10)) {
+                rgb_frame_update(rgb_brightness, rgb_type);
+                rgb_wait_count = _systick_ccr;
+            }
+        }
     }
 }
 
@@ -311,7 +329,6 @@ void btn_handler(btn_t* btn) {
 }
 
 void btn_scan_isr(void) interrupt 3 {
-    // P33- P34+ P35M
     btn_handler(&btn_arr[0]);
     btn_handler(&btn_arr[1]);
     btn_handler(&btn_arr[2]);

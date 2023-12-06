@@ -79,14 +79,17 @@ void timer0_Isr(void) interrupt 1 {
 }
 
 void hal_init_all_gpio(void) {
+    P1M0 = 0x08;
+    P1M1 = 0x33;
+    P1PU = 0x33;
+
     P3M0 = 0x00;
-    P3M1 = 0x78;
-    P1M0 = 0x02;
-    P1M1 = 0x00;
-    // I2C内部上拉
-    P1PU = 0xE0;
-    // Key内部上拉
-    P3PU = 0x78;
+    P3M1 = 0x80;
+    P3PU = 0x80;
+
+    P5M0 = 0x00;
+    P5M1 = 0x00;
+
     EA = 1;  // 开总中断
 }
 
@@ -114,12 +117,12 @@ void delay_us(u32 us) {
 }
 
 u8 btn_gpio_read(btn_gpio_t gpio) {
-    if (gpio == BTN_P33) {
-        return P33;
-    } else if (gpio == BTN_P34) {
-        return P34;
-    } else if (gpio == BTN_P35) {
-        return P35;
+    if (gpio == BTN_P) {
+        return P37;
+    } else if (gpio == BTN_S) {
+        return P10;
+    } else if (gpio == BTN_M) {
+        return P11;
     }
     return 0;
 }

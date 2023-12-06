@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-11-02 11:23:32
- * @LastEditTime: 2023-11-30 16:37:04
+ * @LastEditTime: 2023-12-06 17:00:07
  */
 #ifndef __MSYS_H
 #define __MSYS_H
@@ -28,18 +28,18 @@ typedef uint8_t bool;
 #define false 0
 #define true 1
 
-#define I2C_SDA P16
+#define I2C_SDA P14
 #define I2C_SCL P15
-#define RX8025_INT P17
-#define VFD_EN P11
-#define P_STB P14
-#define P_CLK P10
-#define P_DIN P37
+#define VFD_EN P13
+#define P_STB P54
+#define P_CLK P17
+#define P_DIN P16
+#define RGB P34
 
 typedef enum {
-    BTN_P33 = 0,
-    BTN_P34,
-    BTN_P35,
+    BTN_P = 0,
+    BTN_S,
+    BTN_M,
 } btn_gpio_t;
 
 typedef enum {
