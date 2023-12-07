@@ -26,6 +26,7 @@ void rgb_init() {
     RGB = 0;
 }
 
+//24MhzÆµÂÊÏÂÊÊÓÃ
 void send_0() {
     RGB = 1;
     _nop_();

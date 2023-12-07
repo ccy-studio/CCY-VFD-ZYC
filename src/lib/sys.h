@@ -3,7 +3,7 @@
  * @Blog: saisaiwa.com
  * @Author: ccy
  * @Date: 2023-11-02 11:23:32
- * @LastEditTime: 2023-12-06 17:00:07
+ * @LastEditTime: 2023-12-07 10:48:17
  */
 #ifndef __MSYS_H
 #define __MSYS_H
@@ -13,8 +13,6 @@
 #include "STDIO.H"
 #include "STDLIB.H"
 #include "STRING.H"
-
-// #define DEV_PLATFROM
 
 /**
  * 24.000MHz обть24Mhz

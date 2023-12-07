@@ -2,62 +2,6 @@
 
 u32 data _systick_ccr = 0;
 
-#ifdef DEV_PLATFROM
-
-bit busy = 0;
-/**
- * 关键字code是51单片机特有关键字
- * 而运用code关键字修饰下定义的变量，比如unsigned char code i；
- * 它们则存储在单片机程序存储空间FLASH中，节省单片机RAM资源，但在程序中不能更改这些变量的值。
- */
-char* code STCISPCMD = "@STCISP#";
-u8 rx_index = 0;
-
-void hal_init_uart(void) {
-    SCON = 0x50;   // 8位数据,可变波特率
-    AUXR |= 0x40;  // 定时器时钟1T模式
-    AUXR &= 0xFE;  // 串口1选择定时器1为波特率发生器
-    TMOD &= 0x0F;  // 设置定时器模式
-    TL1 = 0xD0;    // 设置定时初始值
-    TH1 = 0xFF;    // 设置定时初始值
-    ET1 = 0;       // 禁止定时器中断
-    TR1 = 1;       // 定时器1开始计时
-    ES = 1;        // 使能串口1中断
-}
-void hal_uart_isr() interrupt 4 {
-    char dat;
-    if (TI) {
-        TI = 0;
-        busy = 0;
-    }
-    if (RI) {
-        RI = 0;
-        dat = SBUF;
-        if (dat == STCISPCMD[rx_index]) {
-            rx_index++;
-            if (STCISPCMD[rx_index] == '\0') {
-                IAP_CONTR = 0x60;  // 软复位到ISP进行下载
-            }
-        } else {
-            // 不匹配重新开始
-            rx_index++;
-            if (dat == STCISPCMD[rx_index]) {
-                rx_index++;
-            }
-        }
-    }
-}
-char putchar(char ch) {
-    while (busy)
-        ;
-    busy = 1;
-    SBUF = ch;
-    return ch;
-}
-#else
-void hal_init_uart(void) {}
-#endif
-
 void hal_init_systick() {
     // 1毫秒@24.000MHz
     AUXR |= 0x80;  // 定时器时钟1T模式
