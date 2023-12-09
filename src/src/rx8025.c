@@ -219,7 +219,7 @@ void rx8025_time_get(rx8025_timeinfo* timeinfo) {
         timeinfo->year = 23;
     }
     if (timeinfo->month > 12) {
-        timeinfo->year = 12;
+        timeinfo->month = 12;
     }
     timeinfo->week = (-35 + timeinfo->year + (timeinfo->year / 4) +
                       (13 * (timeinfo->month + 1) / 5) + timeinfo->day - 1) %
@@ -237,15 +237,15 @@ void rx8025_time_get(rx8025_timeinfo* timeinfo) {
         timeinfo->min = 0;
     }
     if (timeinfo->sec >= 60) {
-        timeinfo->min = 0;
+        timeinfo->sec = 0;
     }
 }
 
 void formart_time(rx8025_timeinfo* timeinfo, char* buf) {
     // sprintf(buf, "%bd %02bd%02bd %02bd", timeinfo->week, timeinfo->hour,
     //         timeinfo->min, timeinfo->sec);
-     sprintf(buf, " %02bd %02bd %02bd", timeinfo->hour,
-            timeinfo->min, timeinfo->sec);
+    sprintf(buf, " %02bd %02bd %02bd", timeinfo->hour, timeinfo->min,
+            timeinfo->sec);
 }
 
 /**
